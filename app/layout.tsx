@@ -1,14 +1,9 @@
 import type { Metadata } from "next";
-import { DM_Sans } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import localFont from "next/font/local";
 import { Toaster } from "sonner";
 import "./globals.css";
-
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  subsets: ["latin"],
-  display: "swap",
-});
 
 const instrumentSerif = localFont({
   src: [
@@ -40,18 +35,18 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`dark ${dmSans.variable} ${instrumentSerif.variable} h-full antialiased`}
+      className={`${GeistSans.variable} ${GeistMono.variable} ${instrumentSerif.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {children}
         <Toaster
-          theme="dark"
+          theme="light"
           position="bottom-right"
           toastOptions={{
             style: {
-              background: "#111111",
-              border: "1px solid #262626",
-              color: "#F5F0E8",
+              background: "#FFFFFF",
+              border: "1px solid #E8DDD1",
+              color: "#2A1F1A",
             },
           }}
         />

@@ -32,9 +32,12 @@ export function Nav() {
   }
 
   return (
-    <nav className="border-b border-border bg-card">
+    <nav className="border-b border-cream-300 bg-white/70 backdrop-blur-xl sticky top-0 z-50">
       <div className="mx-auto max-w-4xl flex items-center justify-between px-4 h-14">
-        <Link href="/dashboard" className="font-heading text-xl">
+        <Link
+          href="/dashboard"
+          className="font-heading text-xl text-ink-soft hover:text-peach-700 transition-colors"
+        >
           BetterSpeaking
         </Link>
 
@@ -49,13 +52,13 @@ export function Nav() {
                 key={href}
                 href={href}
                 className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm transition-colors",
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-sm transition-colors",
                   isActive
-                    ? "bg-secondary text-foreground"
-                    : "text-muted-foreground hover:text-foreground"
+                    ? "bg-peach-50 text-peach-700"
+                    : "text-cream-600 hover:text-ink-soft hover:bg-cream-100"
                 )}
               >
-                <Icon className="h-4 w-4" />
+                <Icon className="h-4 w-4" strokeWidth={1.75} />
                 <span className="hidden sm:inline">{label}</span>
               </Link>
             );
@@ -64,7 +67,7 @@ export function Nav() {
 
         <div className="flex items-center gap-3">
           {email && (
-            <span className="text-xs text-muted-foreground hidden md:inline">
+            <span className="text-xs text-cream-500 hidden md:inline">
               {email}
             </span>
           )}
@@ -72,9 +75,9 @@ export function Nav() {
             variant="ghost"
             size="sm"
             onClick={handleSignOut}
-            className="text-muted-foreground hover:text-foreground"
+            className="text-cream-500 hover:text-ink-soft hover:bg-cream-100"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-4 w-4" strokeWidth={1.75} />
           </Button>
         </div>
       </div>

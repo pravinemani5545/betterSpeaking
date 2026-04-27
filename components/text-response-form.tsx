@@ -82,16 +82,20 @@ export function TextResponseForm({
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="Type your answer here... Use the STAR method for behavioral questions (Situation, Task, Action, Result)."
-          className="min-h-[200px] bg-card border-border resize-y"
+          className="min-h-[200px] bg-white border-cream-300 rounded-[10px] resize-y focus:ring-peach-500/25 text-ink-soft placeholder:text-cream-400"
           maxLength={5000}
           disabled={isLoading}
         />
-        <span className="absolute bottom-2 right-2 text-xs text-muted-foreground">
+        <span className="absolute bottom-2 right-2 text-xs text-cream-500">
           {text.length}/5000
         </span>
       </div>
 
-      <Button type="submit" disabled={isLoading || text.length < 20}>
+      <Button
+        type="submit"
+        disabled={isLoading || text.length < 20}
+        className="bg-peach-500 text-white hover:bg-peach-600 rounded-[10px]"
+      >
         {status === "submitting" ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -104,8 +108,8 @@ export function TextResponseForm({
           </>
         ) : (
           <>
-            <Send className="mr-2 h-4 w-4" />
-            Submit & Analyze
+            <Send className="mr-2 h-4 w-4" strokeWidth={1.75} />
+            Submit & analyze
           </>
         )}
       </Button>

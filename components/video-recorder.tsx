@@ -236,9 +236,9 @@ export function VideoRecorder({ questionId, onSubmitted }: VideoRecorderProps) {
 
   if (!browserSupported) {
     return (
-      <div className="border border-border bg-card rounded-lg p-6 text-center space-y-3">
-        <AlertTriangle className="h-8 w-8 text-amber-400 mx-auto" />
-        <p className="text-sm text-muted-foreground">
+      <div className="border border-cream-200 bg-white rounded-[14px] p-6 text-center space-y-3 shadow-[0_2px_6px_rgba(74,45,30,0.05),0_1px_2px_rgba(74,45,30,0.04)]">
+        <AlertTriangle className="h-8 w-8 text-rose mx-auto" strokeWidth={1.75} />
+        <p className="text-sm text-cream-600">
           Your browser doesn&apos;t support video recording. Please use Chrome
           or Edge.
         </p>
@@ -249,8 +249,8 @@ export function VideoRecorder({ questionId, onSubmitted }: VideoRecorderProps) {
   return (
     <div className="space-y-4">
       {/* Video Preview */}
-      <div className="border border-border bg-card rounded-lg overflow-hidden">
-        <div className="relative aspect-video bg-black">
+      <div className="border border-cream-200 bg-white rounded-[14px] overflow-hidden shadow-[0_2px_6px_rgba(74,45,30,0.05),0_1px_2px_rgba(74,45,30,0.04)]">
+        <div className="relative aspect-video bg-cream-900">
           <video
             ref={videoRef}
             autoPlay
@@ -260,15 +260,15 @@ export function VideoRecorder({ questionId, onSubmitted }: VideoRecorderProps) {
           />
           {status === "recording" && (
             <div className="absolute top-4 left-4 flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-sm font-mono text-white bg-black/50 px-2 py-0.5 rounded">
+              <div className="h-3 w-3 rounded-full bg-rose animate-pulse" />
+              <span className="text-sm font-mono text-white bg-cream-900/50 px-2 py-0.5 rounded-[6px]">
                 {formatDuration(duration)}
               </span>
             </div>
           )}
           {status === "idle" && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <Camera className="h-12 w-12 text-muted-foreground" />
+              <Camera className="h-12 w-12 text-cream-400" strokeWidth={1.75} />
             </div>
           )}
         </div>
@@ -277,25 +277,37 @@ export function VideoRecorder({ questionId, onSubmitted }: VideoRecorderProps) {
       {/* Controls */}
       <div className="flex items-center gap-3">
         {status === "idle" && (
-          <Button onClick={startCamera}>
-            <Camera className="mr-2 h-4 w-4" />
-            Start Camera
+          <Button
+            onClick={startCamera}
+            className="bg-peach-500 text-white hover:bg-peach-600 rounded-[10px]"
+          >
+            <Camera className="mr-2 h-4 w-4" strokeWidth={1.75} />
+            Start camera
           </Button>
         )}
         {status === "previewing" && (
-          <Button onClick={startRecording}>
-            <Video className="mr-2 h-4 w-4" />
-            Start Recording
+          <Button
+            onClick={startRecording}
+            className="bg-peach-500 text-white hover:bg-peach-600 rounded-[10px]"
+          >
+            <Video className="mr-2 h-4 w-4" strokeWidth={1.75} />
+            Start recording
           </Button>
         )}
         {status === "recording" && (
-          <Button onClick={stopRecording} variant="destructive">
-            <Square className="mr-2 h-4 w-4" />
-            Stop Recording
+          <Button
+            onClick={stopRecording}
+            className="bg-rose text-white hover:bg-rose/90 rounded-[10px]"
+          >
+            <Square className="mr-2 h-4 w-4" strokeWidth={1.75} />
+            Stop recording
           </Button>
         )}
         {(status === "uploading" || status === "analyzing") && (
-          <Button disabled>
+          <Button
+            disabled
+            className="bg-cream-200 text-cream-600 rounded-[10px]"
+          >
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             {status === "uploading"
               ? "Uploading video..."
@@ -306,8 +318,8 @@ export function VideoRecorder({ questionId, onSubmitted }: VideoRecorderProps) {
 
       {/* Speech Recognition Warning */}
       {!speechSupported && status !== "idle" && (
-        <p className="text-xs text-amber-400 flex items-center gap-1">
-          <AlertTriangle className="h-3 w-3" />
+        <p className="text-xs text-rose flex items-center gap-1">
+          <AlertTriangle className="h-3 w-3" strokeWidth={1.75} />
           Live transcription not available in this browser. Analysis will be
           based on video only.
         </p>
@@ -315,9 +327,9 @@ export function VideoRecorder({ questionId, onSubmitted }: VideoRecorderProps) {
 
       {/* Live Transcript */}
       {transcript && (status === "recording" || status === "previewing") && (
-        <div className="border border-border bg-card rounded-lg p-4">
-          <p className="text-xs text-muted-foreground mb-2">Live Transcript</p>
-          <p className="text-sm leading-relaxed">{transcript}</p>
+        <div className="border border-cream-200 bg-white rounded-[14px] p-4 shadow-[0_1px_2px_rgba(74,45,30,0.04)]">
+          <p className="text-xs text-cream-500 mb-2">Live transcript</p>
+          <p className="text-sm leading-relaxed text-cream-700">{transcript}</p>
         </div>
       )}
     </div>

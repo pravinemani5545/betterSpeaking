@@ -27,8 +27,8 @@ export default function DashboardPage() {
     return (
       <div className="space-y-6">
         <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-40 w-full" />
-        <Skeleton className="h-64 w-full" />
+        <Skeleton className="h-40 w-full rounded-[14px]" />
+        <Skeleton className="h-64 w-full rounded-[14px]" />
       </div>
     );
   }
@@ -38,8 +38,10 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-heading text-3xl">Today&apos;s Question</h1>
-        <p className="text-muted-foreground text-sm mt-1">
+        <h1 className="font-heading text-3xl text-ink-soft">
+          Today&apos;s question
+        </h1>
+        <p className="text-cream-600 text-sm mt-1">
           Practice makes progress.
         </p>
       </div>
@@ -54,30 +56,30 @@ export default function DashboardPage() {
 
       {!alreadyAnswered && !submitted && dailyQuestion && (
         <>
-          <div className="flex gap-1 p-1 bg-secondary rounded-lg w-fit">
+          <div className="flex gap-1 p-1 bg-cream-100 rounded-[10px] w-fit">
             <button
               onClick={() => setMode("text")}
               className={cn(
-                "flex items-center gap-1.5 px-4 py-2 rounded-md text-sm transition-colors",
+                "flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-sm transition-colors",
                 mode === "text"
-                  ? "bg-card text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-white text-ink-soft shadow-[0_1px_2px_rgba(74,45,30,0.04)]"
+                  : "text-cream-600 hover:text-ink-soft"
               )}
             >
-              <Type className="h-4 w-4" />
-              Type Answer
+              <Type className="h-4 w-4" strokeWidth={1.75} />
+              Type answer
             </button>
             <button
               onClick={() => setMode("video")}
               className={cn(
-                "flex items-center gap-1.5 px-4 py-2 rounded-md text-sm transition-colors",
+                "flex items-center gap-1.5 px-4 py-2 rounded-[8px] text-sm transition-colors",
                 mode === "video"
-                  ? "bg-card text-foreground"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-white text-ink-soft shadow-[0_1px_2px_rgba(74,45,30,0.04)]"
+                  : "text-cream-600 hover:text-ink-soft"
               )}
             >
-              <Video className="h-4 w-4" />
-              Record Video
+              <Video className="h-4 w-4" strokeWidth={1.75} />
+              Record video
             </button>
           </div>
 
@@ -96,7 +98,7 @@ export default function DashboardPage() {
       )}
 
       {(submitted || alreadyAnswered) && !analysis && (
-        <div className="text-center py-8 text-muted-foreground">
+        <div className="text-center py-8 text-cream-500">
           {alreadyAnswered && !submitted
             ? "You've already answered today's question. Check your history for the analysis."
             : "Processing your response..."}

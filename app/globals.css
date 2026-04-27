@@ -2,13 +2,11 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-dm-sans);
-  --font-mono: monospace;
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
   --font-heading: var(--font-instrument-serif);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
@@ -38,33 +36,61 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+
+  /* Peachy extended palette */
+  --color-peach-50: #FFF7F2;
+  --color-peach-100: #FFEDE0;
+  --color-peach-200: #FFDCC4;
+  --color-peach-300: #FFC59E;
+  --color-peach-400: #FDA876;
+  --color-peach-500: #F58A55;
+  --color-peach-600: #E26B3A;
+  --color-peach-700: #B7502A;
+  --color-peach-800: #813920;
+  --color-peach-900: #4F2415;
+  --color-cream-50: #FFFDFB;
+  --color-cream-100: #FBF6F1;
+  --color-cream-200: #F4ECE3;
+  --color-cream-300: #E8DDD1;
+  --color-cream-400: #C9B9A8;
+  --color-cream-500: #9D8B7B;
+  --color-cream-600: #6F6055;
+  --color-cream-700: #4A3F38;
+  --color-cream-800: #2E2620;
+  --color-cream-900: #1A1411;
+  --color-blush: #F7C8C0;
+  --color-apricot: #FFD9A8;
+  --color-sage: #C4D3BE;
+  --color-rose: #E8896F;
+  --color-ink-soft: #2A1F1A;
 }
 
 :root {
-  --background: #0A0A0A;
-  --foreground: #F5F0E8;
-  --card: #111111;
-  --card-foreground: #F5F0E8;
-  --popover: #111111;
-  --popover-foreground: #F5F0E8;
-  --primary: #E8A020;
-  --primary-foreground: #0A0A0A;
-  --secondary: #1A1A1A;
-  --secondary-foreground: #F5F0E8;
-  --muted: #1A1A1A;
-  --muted-foreground: #8A8580;
-  --accent: #E8A020;
-  --accent-foreground: #0A0A0A;
-  --destructive: #EF4444;
-  --border: #262626;
-  --input: #262626;
-  --ring: #E8A020;
-  --radius: 0.5rem;
-  --chart-1: #E8A020;
-  --chart-2: #5fb8ff;
-  --chart-3: #EF4444;
-  --chart-4: #8A8580;
-  --chart-5: #555250;
+  /* Peachy Design System — Light, warm, airy */
+  --background: #FFFDFB;
+  --foreground: #2A1F1A;
+  --card: #FFFFFF;
+  --card-foreground: #2A1F1A;
+  --popover: #FFFFFF;
+  --popover-foreground: #2A1F1A;
+  --primary: #F58A55;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FBF6F1;
+  --secondary-foreground: #2A1F1A;
+  --muted: #F4ECE3;
+  --muted-foreground: #6F6055;
+  --accent: #FFF7F2;
+  --accent-foreground: #B7502A;
+  --destructive: #E8896F;
+  --border: #E8DDD1;
+  --input: #E8DDD1;
+  --ring: #F58A55;
+  --radius: 0.875rem;
+  --chart-1: #F58A55;
+  --chart-2: #C4D3BE;
+  --chart-3: #E8896F;
+  --chart-4: #FFD9A8;
+  --chart-5: #F7C8C0;
 }
 
 @layer base {
@@ -73,6 +99,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
   html {
     @apply font-sans;

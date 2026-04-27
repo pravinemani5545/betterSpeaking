@@ -45,13 +45,13 @@ export function QuestionPoolManager() {
       {/* Add Question Form */}
       <form
         onSubmit={handleAdd}
-        className="border border-border bg-card rounded-lg p-4 space-y-3"
+        className="border border-cream-200 bg-white rounded-[14px] p-4 space-y-3 shadow-[0_2px_6px_rgba(74,45,30,0.05),0_1px_2px_rgba(74,45,30,0.04)]"
       >
         <Textarea
           value={newText}
           onChange={(e) => setNewText(e.target.value)}
           placeholder="Write a new interview question (min 10 characters)..."
-          className="bg-secondary border-border resize-none"
+          className="bg-cream-50 border-cream-300 rounded-[10px] resize-none text-ink-soft placeholder:text-cream-400"
           rows={2}
           maxLength={500}
         />
@@ -61,7 +61,7 @@ export function QuestionPoolManager() {
             onChange={(e) =>
               setNewCategory(e.target.value as QuestionCategory)
             }
-            className="bg-secondary border border-border rounded-md px-3 py-1.5 text-sm text-foreground"
+            className="bg-cream-50 border border-cream-300 rounded-[10px] px-3 py-1.5 text-sm text-ink-soft"
           >
             {QUESTION_CATEGORIES.map((cat) => (
               <option key={cat} value={cat}>
@@ -73,15 +73,16 @@ export function QuestionPoolManager() {
             type="submit"
             size="sm"
             disabled={adding || newText.length < 10}
+            className="bg-peach-500 text-white hover:bg-peach-600 rounded-[10px]"
           >
             {adding ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              <Plus className="h-4 w-4" />
+              <Plus className="h-4 w-4" strokeWidth={1.75} />
             )}
             <span className="ml-1.5">Add</span>
           </Button>
-          <span className="text-xs text-muted-foreground ml-auto">
+          <span className="text-xs text-cream-500 ml-auto">
             {newText.length}/500
           </span>
         </div>
@@ -92,10 +93,10 @@ export function QuestionPoolManager() {
         <button
           onClick={() => setFilter(undefined)}
           className={cn(
-            "px-3 py-1.5 rounded-md text-sm transition-colors",
+            "px-3 py-1.5 rounded-[10px] text-sm transition-colors",
             !filter
-              ? "bg-secondary text-foreground"
-              : "text-muted-foreground hover:text-foreground"
+              ? "bg-peach-50 text-peach-700"
+              : "text-cream-600 hover:text-ink-soft hover:bg-cream-100"
           )}
         >
           All
@@ -105,10 +106,10 @@ export function QuestionPoolManager() {
             key={cat}
             onClick={() => setFilter(cat)}
             className={cn(
-              "px-3 py-1.5 rounded-md text-sm transition-colors",
+              "px-3 py-1.5 rounded-[10px] text-sm transition-colors",
               filter === cat
-                ? "bg-secondary text-foreground"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-peach-50 text-peach-700"
+                : "text-cream-600 hover:text-ink-soft hover:bg-cream-100"
             )}
           >
             {CATEGORY_LABELS[cat]}
@@ -120,11 +121,11 @@ export function QuestionPoolManager() {
       {loading ? (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-16 w-full" />
+            <Skeleton key={i} className="h-16 w-full rounded-[14px]" />
           ))}
         </div>
       ) : questions.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
+        <div className="text-center py-12 text-cream-500">
           No questions yet. Add some above or they&apos;ll be seeded
           automatically when you visit the dashboard.
         </div>
@@ -133,16 +134,16 @@ export function QuestionPoolManager() {
           {questions.map((q) => (
             <div
               key={q.id}
-              className="group flex items-start gap-3 border border-border bg-card rounded-lg p-4 hover:bg-secondary/50 transition-colors"
+              className="group flex items-start gap-3 border border-cream-200 bg-white rounded-[14px] p-4 hover:bg-peach-50/50 transition-colors shadow-[0_1px_2px_rgba(74,45,30,0.04)]"
             >
               <div className="flex-1 min-w-0">
-                <p className="text-sm leading-relaxed">{q.text}</p>
+                <p className="text-sm leading-relaxed text-ink-soft">
+                  {q.text}
+                </p>
                 <div className="flex items-center gap-2 mt-2">
                   <CategoryBadge category={q.category} />
                   {q.is_default && (
-                    <span className="text-xs text-muted-foreground">
-                      Default
-                    </span>
+                    <span className="text-xs text-cream-500">Default</span>
                   )}
                 </div>
               </div>
@@ -151,12 +152,12 @@ export function QuestionPoolManager() {
                 size="sm"
                 onClick={() => handleDelete(q.id)}
                 disabled={deletingId === q.id}
-                className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive transition-all"
+                className="opacity-0 group-hover:opacity-100 text-cream-500 hover:text-rose transition-all"
               >
                 {deletingId === q.id ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-4 w-4" strokeWidth={1.75} />
                 )}
               </Button>
             </div>
