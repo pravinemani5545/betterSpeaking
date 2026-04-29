@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createBrowserClient } from "@/lib/supabase/browser";
 import { useEffect, useState } from "react";
-import { LogOut, Mic, Clock, List, StickyNote } from "lucide-react";
+import { LogOut, Mic, Clock, List, StickyNote, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -13,6 +13,7 @@ const NAV_LINKS = [
   { href: "/dashboard/history", label: "History", icon: Clock },
   { href: "/dashboard/questions", label: "Questions", icon: List },
   { href: "/dashboard/notes", label: "Notes", icon: StickyNote },
+  { href: "/dashboard/feedback", label: "Feedback", icon: MessageSquare },
 ];
 
 export function Nav() {
