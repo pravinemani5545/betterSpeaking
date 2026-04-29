@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
-import { DEFAULT_QUESTIONS } from "@/lib/default-questions";
 import { QUESTION_CATEGORIES } from "@/types";
 
 export async function GET() {
@@ -26,20 +25,17 @@ export async function GET() {
     return NextResponse.json(existing);
   }
 
-  // Seed defaults if user has zero questions
+  // Check if user has any questions
   const { count } = await supabase
     .from("questions")
     .select("*", { count: "exact", head: true })
     .eq("user_id", user.id);
 
   if (count === 0) {
-    const rows = DEFAULT_QUESTIONS.map((q) => ({
-      user_id: user.id,
-      text: q.text,
-      category: q.category,
-      is_default: true,
-    }));
-    await supabase.from("questions").insert(rows);
+    return NextResponse.json(
+      { error: "No questions available. Add some questions first." },
+      { status: 404 }
+    );
   }
 
   // Get recently served question IDs (last 30 days)

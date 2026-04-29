@@ -44,6 +44,24 @@ export function useQuestions(category?: QuestionCategory) {
     return true;
   }
 
+  async function addBulkQuestions(
+    items: { text: string; category: QuestionCategory }[]
+  ) {
+    const res = await fetch("/api/questions/bulk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ questions: items }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      toast.error(err.error || "Failed to add questions");
+      return false;
+    }
+    toast.success(`${items.length} questions added`);
+    await fetchQuestions();
+    return true;
+  }
+
   async function deleteQuestion(id: string) {
     const res = await fetch(`/api/questions/${id}`, { method: "DELETE" });
     if (!res.ok) {
@@ -55,5 +73,12 @@ export function useQuestions(category?: QuestionCategory) {
     return true;
   }
 
-  return { questions, loading, refetch: fetchQuestions, addQuestion, deleteQuestion };
+  return {
+    questions,
+    loading,
+    refetch: fetchQuestions,
+    addQuestion,
+    addBulkQuestions,
+    deleteQuestion,
+  };
 }

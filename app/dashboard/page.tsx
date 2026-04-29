@@ -6,6 +6,7 @@ import { QuestionCard } from "@/components/question-card";
 import { TextResponseForm } from "@/components/text-response-form";
 import { VideoRecorder } from "@/components/video-recorder";
 import { AnalysisDisplay } from "@/components/analysis-display";
+import { HeatMap } from "@/components/heat-map";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Type, Video } from "lucide-react";
@@ -106,6 +107,8 @@ export default function DashboardPage() {
       )}
 
       {analysis && <AnalysisDisplay analysis={analysis} />}
+
+      <HeatMap />
     </div>
   );
 }
