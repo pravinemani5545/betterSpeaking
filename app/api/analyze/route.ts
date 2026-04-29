@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { AnalyzeRequestSchema } from "@/lib/validators";
-import { getClaudeClient } from "@/lib/claude";
+import { getGeminiClient } from "@/lib/gemini";
 import {
   buildTextAnalysisPrompt,
   buildVideoAnalysisPrompt,
 } from "@/lib/analysis";
-import type Anthropic from "@anthropic-ai/sdk";
 
 const FILLER_WORDS = [
   "um",
@@ -64,7 +63,8 @@ export async function POST(request: Request) {
     return NextResponse.json(existingAnalysis);
   }
 
-  const claude = getClaudeClient();
+  const genAI = getGeminiClient();
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
   let analysisResult: Record<string, unknown>;
 
   if (responseData.response_type === "text") {
@@ -73,22 +73,13 @@ export async function POST(request: Request) {
       responseData.text_content
     );
 
-    const message = await claude.messages.create({
-      model: "claude-sonnet-4-5-20250929",
-      max_tokens: 2000,
-      messages: [{ role: "user", content: prompt }],
-    });
-
-    const textContent = message.content[0];
-    if (textContent.type !== "text") {
-      return NextResponse.json(
-        { error: "Unexpected response format" },
-        { status: 500 }
-      );
-    }
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
 
     try {
-      analysisResult = JSON.parse(textContent.text);
+      // Strip markdown fences if present
+      const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      analysisResult = JSON.parse(cleaned);
     } catch {
       return NextResponse.json(
         { error: "Failed to parse analysis" },
@@ -102,42 +93,30 @@ export async function POST(request: Request) {
       responseData.transcript || ""
     );
 
-    const content: Anthropic.Messages.ContentBlockParam[] = [
-      { type: "text", text: prompt },
+    // Build parts array with text + frame images
+    const parts: Array<{ text: string } | { inlineData: { mimeType: string; data: string } }> = [
+      { text: prompt },
     ];
 
-    // Add frame images if provided
     const frames: string[] = parsed.data.frames ?? [];
     const selectedFrames = frames.slice(0, 10);
 
     for (const frame of selectedFrames) {
       const base64Data = frame.replace(/^data:image\/jpeg;base64,/, "");
-      content.push({
-        type: "image",
-        source: {
-          type: "base64",
-          media_type: "image/jpeg",
+      parts.push({
+        inlineData: {
+          mimeType: "image/jpeg",
           data: base64Data,
         },
       });
     }
 
-    const message = await claude.messages.create({
-      model: "claude-sonnet-4-5-20250929",
-      max_tokens: 3000,
-      messages: [{ role: "user", content }],
-    });
-
-    const textContent = message.content[0];
-    if (textContent.type !== "text") {
-      return NextResponse.json(
-        { error: "Unexpected response format" },
-        { status: 500 }
-      );
-    }
+    const result = await model.generateContent(parts);
+    const text = result.response.text();
 
     try {
-      analysisResult = JSON.parse(textContent.text);
+      const cleaned = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+      analysisResult = JSON.parse(cleaned);
     } catch {
       return NextResponse.json(
         { error: "Failed to parse analysis" },
