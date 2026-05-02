@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
 import type { Note } from "@/hooks/use-notes";
 
-export function useResponseNote(responseId: string) {
+export function useResponseNote(responseId: string, questionText?: string) {
   const [note, setNote] = useState<Note | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchNote = useCallback(async () => {
     setLoading(true);
@@ -36,7 +35,7 @@ export function useResponseNote(responseId: string) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           content: "",
-          title: "",
+          title: questionText || "",
           response_id: responseId,
         }),
       });
@@ -53,20 +52,23 @@ export function useResponseNote(responseId: string) {
   function updateContent(content: string) {
     if (!note) return;
     setNote({ ...note, content });
-
-    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-    saveTimerRef.current = setTimeout(async () => {
-      try {
-        await fetch(`/api/notes/${note.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content }),
-        });
-      } catch {
-        toast.error("Failed to save note");
-      }
-    }, 1000);
   }
 
-  return { note, loading, saving, createNote, updateContent };
+  async function saveNote() {
+    if (!note) return;
+    setSaving(true);
+    try {
+      await fetch(`/api/notes/${note.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: note.content }),
+      });
+    } catch {
+      toast.error("Failed to save note");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return { note, loading, saving, createNote, updateContent, saveNote };
 }

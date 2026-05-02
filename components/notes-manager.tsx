@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNotes, type Note } from "@/hooks/use-notes";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Trash2, Loader2, StickyNote, List, Link2 } from "lucide-react";
+import { Plus, Trash2, Loader2, StickyNote, List, Link2, Save } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 export function NotesManager() {
@@ -16,7 +16,8 @@ export function NotesManager() {
   const [content, setContent] = useState("");
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Set first note as active when loaded
@@ -28,36 +29,29 @@ export function NotesManager() {
     }
   }, [notes, activeNote]);
 
-  // Auto-save with debounce
-  const autoSave = useCallback(
-    (noteId: string, newTitle: string, newContent: string) => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-      saveTimerRef.current = setTimeout(() => {
-        updateNote(noteId, { title: newTitle, content: newContent });
-      }, 1000);
-    },
-    [updateNote]
-  );
-
   function handleSelectNote(note: Note) {
-    // Save current note immediately if pending
-    if (saveTimerRef.current && activeNote) {
-      clearTimeout(saveTimerRef.current);
-      updateNote(activeNote.id, { title, content });
-    }
     setActiveNote(note);
     setTitle(note.title);
     setContent(note.content);
+    setDirty(false);
   }
 
   function handleTitleChange(newTitle: string) {
     setTitle(newTitle);
-    if (activeNote) autoSave(activeNote.id, newTitle, content);
+    setDirty(true);
   }
 
   function handleContentChange(newContent: string) {
     setContent(newContent);
-    if (activeNote) autoSave(activeNote.id, title, newContent);
+    setDirty(true);
+  }
+
+  async function handleSave() {
+    if (!activeNote || !dirty) return;
+    setSaving(true);
+    await updateNote(activeNote.id, { title, content });
+    setDirty(false);
+    setSaving(false);
   }
 
   function insertBullet() {
@@ -216,8 +210,22 @@ export function NotesManager() {
               placeholder="Write your thoughts..."
               className="flex-1 border-0 rounded-none px-5 py-4 resize-none text-sm text-cream-700 placeholder:text-cream-400 focus-visible:ring-0 bg-transparent min-h-[400px]"
             />
-            <div className="px-5 py-2 border-t border-cream-100 text-[10px] text-cream-500">
-              Auto-saves as you type
+            <div className="flex items-center justify-between px-5 py-2 border-t border-cream-100">
+              <span className="text-[10px] text-cream-500">
+                {dirty ? "Unsaved changes" : "Saved"}
+              </span>
+              <button
+                onClick={handleSave}
+                disabled={!dirty || saving}
+                className="flex items-center gap-1 px-3 py-1 text-xs rounded-[8px] bg-peach-500 text-white hover:bg-peach-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                {saving ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <Save className="h-3 w-3" strokeWidth={1.75} />
+                )}
+                Save
+              </button>
             </div>
           </div>
         ) : (

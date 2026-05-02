@@ -3,18 +3,30 @@
 import { useState } from "react";
 import { useResponseNote } from "@/hooks/use-response-note";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronDown, ChevronUp, Plus, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Plus, Loader2, Save } from "lucide-react";
 
 interface ResponseNoteProps {
   responseId: string;
+  questionText?: string;
 }
 
-export function ResponseNote({ responseId }: ResponseNoteProps) {
-  const { note, loading, saving, createNote, updateContent } =
-    useResponseNote(responseId);
+export function ResponseNote({ responseId, questionText }: ResponseNoteProps) {
+  const { note, loading, saving, createNote, updateContent, saveNote } =
+    useResponseNote(responseId, questionText);
   const [open, setOpen] = useState(false);
+  const [dirty, setDirty] = useState(false);
 
   if (loading) return null;
+
+  function handleChange(value: string) {
+    updateContent(value);
+    setDirty(true);
+  }
+
+  async function handleSave() {
+    await saveNote();
+    setDirty(false);
+  }
 
   return (
     <div className="border border-cream-200 bg-white rounded-[14px] shadow-[0_2px_6px_rgba(74,45,30,0.05),0_1px_2px_rgba(74,45,30,0.04)] overflow-hidden">
@@ -38,13 +50,27 @@ export function ResponseNote({ responseId }: ResponseNoteProps) {
             <div className="space-y-2">
               <Textarea
                 value={note.content}
-                onChange={(e) => updateContent(e.target.value)}
+                onChange={(e) => handleChange(e.target.value)}
                 placeholder="Write your notes about this response..."
                 className="border border-cream-200 rounded-[10px] px-4 py-3 resize-none text-sm text-cream-700 placeholder:text-cream-400 focus-visible:ring-peach-300 min-h-[120px] bg-cream-50/50"
               />
-              <p className="text-[10px] text-cream-500">
-                Auto-saves as you type
-              </p>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-cream-500">
+                  {dirty ? "Unsaved changes" : "Saved"}
+                </span>
+                <button
+                  onClick={handleSave}
+                  disabled={!dirty || saving}
+                  className="flex items-center gap-1 px-3 py-1 text-xs rounded-[8px] bg-peach-500 text-white hover:bg-peach-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                >
+                  {saving ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <Save className="h-3 w-3" strokeWidth={1.75} />
+                  )}
+                  Save
+                </button>
+              </div>
             </div>
           ) : (
             <button

@@ -82,7 +82,7 @@ export function ResponseDetail({ response }: ResponseDetailProps) {
       {analysis && <AnalysisDisplay analysis={analysis} />}
 
       {/* Notes */}
-      <ResponseNote responseId={response.id} />
+      <ResponseNote responseId={response.id} questionText={response.question?.text} />
     </div>
   );
 }

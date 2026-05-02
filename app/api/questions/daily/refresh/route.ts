@@ -35,9 +35,7 @@ export async function POST() {
     );
   }
 
-  // Delete current and pick a new one excluding the current question
-  await supabase.from("daily_questions").delete().eq("id", current.id);
-
+  // Pick a new question excluding the current one
   const selectedQuestionId = await selectDailyQuestion(supabase, user.id, [
     current.question_id,
   ]);
@@ -49,14 +47,11 @@ export async function POST() {
     );
   }
 
+  // Update in-place (avoids unique constraint issue)
   const { data: dailyQuestion, error } = await supabase
     .from("daily_questions")
-    .insert({
-      user_id: user.id,
-      question_id: selectedQuestionId,
-      served_date: today,
-      responded: false,
-    })
+    .update({ question_id: selectedQuestionId })
+    .eq("id", current.id)
     .select("*, question:questions(*)")
     .single();
 
