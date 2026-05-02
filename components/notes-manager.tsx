@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNotes, type Note } from "@/hooks/use-notes";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Trash2, Loader2, StickyNote, List, Link2 } from "lucide-react";
+import { Plus, Trash2, Loader2, StickyNote, List, Link2, Save } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { toast } from "sonner";
 
 export function NotesManager() {
   const { notes, loading, createNote, updateNote, deleteNote } = useNotes();
@@ -15,9 +16,12 @@ export function NotesManager() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [creating, setCreating] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const dirty =
+    !!activeNote && (title !== activeNote.title || content !== activeNote.content);
 
   // Set first note as active when loaded
   useEffect(() => {
@@ -28,22 +32,34 @@ export function NotesManager() {
     }
   }, [notes, activeNote]);
 
-  // Auto-save with debounce
-  const autoSave = useCallback(
-    (noteId: string, newTitle: string, newContent: string) => {
-      if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
-      saveTimerRef.current = setTimeout(() => {
-        updateNote(noteId, { title: newTitle, content: newContent });
-      }, 1000);
-    },
-    [updateNote]
-  );
+  // Warn before leaving with unsaved changes
+  useEffect(() => {
+    if (!dirty) return;
+    function handleBeforeUnload(e: BeforeUnloadEvent) {
+      e.preventDefault();
+      e.returnValue = "";
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [dirty]);
+
+  async function handleSave() {
+    if (!activeNote || !dirty || saving) return;
+    setSaving(true);
+    const ok = await updateNote(activeNote.id, { title, content });
+    if (ok) {
+      setActiveNote({ ...activeNote, title, content });
+      toast.success("Note saved");
+    }
+    setSaving(false);
+  }
 
   function handleSelectNote(note: Note) {
-    // Save current note immediately if pending
-    if (saveTimerRef.current && activeNote) {
-      clearTimeout(saveTimerRef.current);
-      updateNote(activeNote.id, { title, content });
+    if (dirty) {
+      const proceed = window.confirm(
+        "You have unsaved changes. Discard them and switch notes?"
+      );
+      if (!proceed) return;
     }
     setActiveNote(note);
     setTitle(note.title);
@@ -52,12 +68,10 @@ export function NotesManager() {
 
   function handleTitleChange(newTitle: string) {
     setTitle(newTitle);
-    if (activeNote) autoSave(activeNote.id, newTitle, content);
   }
 
   function handleContentChange(newContent: string) {
     setContent(newContent);
-    if (activeNote) autoSave(activeNote.id, title, newContent);
   }
 
   function insertBullet() {
@@ -90,6 +104,11 @@ export function NotesManager() {
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
+      e.preventDefault();
+      handleSave();
+      return;
+    }
     if (e.key !== "Enter") return;
     const ta = textareaRef.current;
     if (!ta) return;
@@ -216,8 +235,24 @@ export function NotesManager() {
               placeholder="Write your thoughts..."
               className="flex-1 border-0 rounded-none px-5 py-4 resize-none text-sm text-cream-700 placeholder:text-cream-400 focus-visible:ring-0 bg-transparent min-h-[400px]"
             />
-            <div className="px-5 py-2 border-t border-cream-100 text-[10px] text-cream-500">
-              Auto-saves as you type
+            <div className="flex items-center justify-between px-5 py-2 border-t border-cream-100">
+              <span className="text-[10px] text-cream-500">
+                {dirty ? "Unsaved changes" : "All changes saved"}
+              </span>
+              <Button
+                size="sm"
+                onClick={handleSave}
+                disabled={!dirty || saving}
+                className="bg-peach-500 text-white hover:bg-peach-600 disabled:opacity-50 rounded-[10px] h-7 px-3 text-xs"
+                title="Save (⌘S)"
+              >
+                {saving ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                ) : (
+                  <Save className="h-3.5 w-3.5 mr-1.5" strokeWidth={1.75} />
+                )}
+                Save
+              </Button>
             </div>
           </div>
         ) : (
