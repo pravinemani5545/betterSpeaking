@@ -1,4 +1,5 @@
 import { HistoryList } from "@/components/history-list";
+import { InsightsCard } from "@/components/insights-card";
 
 export default function HistoryPage() {
   return (
@@ -9,6 +10,7 @@ export default function HistoryPage() {
           Review your past responses and track improvement.
         </p>
       </div>
+      <InsightsCard />
       <HistoryList />
     </div>
   );

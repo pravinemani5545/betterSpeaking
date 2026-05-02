@@ -5,9 +5,10 @@ import { z } from "zod";
 const CreateNoteSchema = z.object({
   title: z.string().max(200).optional().default(""),
   content: z.string().max(10000),
+  response_id: z.string().uuid().optional(),
 });
 
-export async function GET() {
+export async function GET(request: Request) {
   const supabase = await createServerClient();
   const {
     data: { user },
@@ -16,11 +17,20 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data, error } = await supabase
+  const { searchParams } = new URL(request.url);
+  const responseId = searchParams.get("response_id");
+
+  let query = supabase
     .from("notes")
     .select("*")
     .eq("user_id", user.id)
     .order("updated_at", { ascending: false });
+
+  if (responseId) {
+    query = query.eq("response_id", responseId);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -54,6 +64,7 @@ export async function POST(request: Request) {
       user_id: user.id,
       title: parsed.data.title,
       content: parsed.data.content,
+      ...(parsed.data.response_id ? { response_id: parsed.data.response_id } : {}),
     })
     .select()
     .single();

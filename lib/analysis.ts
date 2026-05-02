@@ -74,3 +74,62 @@ For delivery analysis from video frames:
 
 Be constructive but honest. Respond with ONLY the JSON object, no markdown fences.`;
 }
+
+interface ResponseSummary {
+  question: string;
+  category: string;
+  overall_score: number;
+  strengths: string[];
+  suggestions: string[];
+  content_summary: string;
+}
+
+export function buildDailyInsightPrompt(responses: ResponseSummary[]): string {
+  const summaries = responses
+    .map(
+      (r, i) =>
+        `${i + 1}. [${r.category}] Q: "${r.question}" — Score: ${r.overall_score}/10. Strengths: ${r.strengths.join(", ")}. Areas: ${r.suggestions.join(", ")}.`
+    )
+    .join("\n");
+
+  return `You are an expert interview coach. Based on these recent practice responses, give ONE specific, actionable tip for improvement. Reference specific weakness patterns you see.
+
+RECENT RESPONSES:
+${summaries}
+
+Respond with ONLY a JSON object:
+{
+  "tip": "<1-2 sentence specific actionable tip>",
+  "based_on_count": ${responses.length}
+}
+
+No markdown fences.`;
+}
+
+export function buildWeeklyInsightPrompt(responses: ResponseSummary[]): string {
+  const summaries = responses
+    .map(
+      (r, i) =>
+        `${i + 1}. [${r.category}] Q: "${r.question}" — Score: ${r.overall_score}/10\n   Content: ${r.content_summary}\n   Strengths: ${r.strengths.join(", ")}\n   Suggestions: ${r.suggestions.join(", ")}`
+    )
+    .join("\n\n");
+
+  return `You are an expert interview coach providing a comprehensive weekly coaching report. Analyze these practice responses from the past week.
+
+RESPONSES THIS WEEK:
+${summaries}
+
+Provide a JSON object with this structure:
+{
+  "trend": "<improving|stable|declining>",
+  "average_score": <number>,
+  "category_scores": { "<category>": <average_score>, ... },
+  "strengths": ["<recurring strength 1>", "<strength 2>"],
+  "weaknesses": ["<recurring weakness 1>", "<weakness 2>"],
+  "focus_areas": ["<top focus area 1>", "<area 2>", "<area 3>"],
+  "practice_exercise": "<one specific practice exercise to do this week>",
+  "responses_analyzed": ${responses.length}
+}
+
+Be specific and reference actual patterns from the responses. No markdown fences.`;
+}

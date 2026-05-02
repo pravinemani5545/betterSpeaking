@@ -9,6 +9,7 @@ export function useDailyQuestion() {
     null
   );
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchDailyQuestion = useCallback(async () => {
     setLoading(true);
@@ -24,9 +25,31 @@ export function useDailyQuestion() {
     }
   }, []);
 
+  const refresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const res = await fetch("/api/questions/daily/refresh", {
+        method: "POST",
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to refresh");
+      }
+      const data = await res.json();
+      setDailyQuestion(data);
+      toast.success("New question loaded");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Failed to skip question"
+      );
+    } finally {
+      setRefreshing(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchDailyQuestion();
   }, [fetchDailyQuestion]);
 
-  return { dailyQuestion, loading, refetch: fetchDailyQuestion };
+  return { dailyQuestion, loading, refreshing, refetch: fetchDailyQuestion, refresh };
 }

@@ -8,6 +8,7 @@ export interface Note {
   user_id: string;
   title: string;
   content: string;
+  response_id: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, Trash2, Loader2, StickyNote } from "lucide-react";
+import { Plus, Trash2, Loader2, StickyNote, List, Link2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 export function NotesManager() {
@@ -17,6 +17,7 @@ export function NotesManager() {
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Set first note as active when loaded
   useEffect(() => {
@@ -57,6 +58,70 @@ export function NotesManager() {
   function handleContentChange(newContent: string) {
     setContent(newContent);
     if (activeNote) autoSave(activeNote.id, title, newContent);
+  }
+
+  function insertBullet() {
+    const ta = textareaRef.current;
+    if (!ta) return;
+
+    const start = ta.selectionStart;
+    const value = ta.value;
+    const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+    const lineEnd = value.indexOf("\n", start);
+    const line = value.substring(lineStart, lineEnd === -1 ? value.length : lineEnd);
+
+    let newContent: string;
+    let newCursorPos: number;
+
+    if (line.startsWith("• ")) {
+      newContent = value.substring(0, lineStart) + line.substring(2) + value.substring(lineEnd === -1 ? value.length : lineEnd);
+      newCursorPos = Math.max(lineStart, start - 2);
+    } else {
+      newContent = value.substring(0, lineStart) + "• " + value.substring(lineStart);
+      newCursorPos = start + 2;
+    }
+
+    handleContentChange(newContent);
+    requestAnimationFrame(() => {
+      ta.selectionStart = newCursorPos;
+      ta.selectionEnd = newCursorPos;
+      ta.focus();
+    });
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key !== "Enter") return;
+    const ta = textareaRef.current;
+    if (!ta) return;
+
+    const start = ta.selectionStart;
+    const value = ta.value;
+    const lineStart = value.lastIndexOf("\n", start - 1) + 1;
+    const line = value.substring(lineStart, start);
+
+    if (!line.startsWith("• ")) return;
+
+    e.preventDefault();
+
+    if (line.trim() === "•") {
+      // Empty bullet — remove it
+      const newContent = value.substring(0, lineStart) + value.substring(start);
+      handleContentChange(newContent);
+      requestAnimationFrame(() => {
+        ta.selectionStart = lineStart;
+        ta.selectionEnd = lineStart;
+      });
+    } else {
+      // Continue bullet on next line
+      const insert = "\n• ";
+      const newContent = value.substring(0, start) + insert + value.substring(start);
+      const newPos = start + insert.length;
+      handleContentChange(newContent);
+      requestAnimationFrame(() => {
+        ta.selectionStart = newPos;
+        ta.selectionEnd = newPos;
+      });
+    }
   }
 
   async function handleCreate() {
@@ -113,46 +178,13 @@ export function NotesManager() {
             No notes yet
           </div>
         ) : (
-          <div className="space-y-1">
-            {notes.map((note) => (
-              <div
-                key={note.id}
-                className={`group flex items-start gap-2 px-3 py-2.5 rounded-[10px] cursor-pointer transition-colors ${
-                  activeNote?.id === note.id
-                    ? "bg-peach-50 text-ink-soft"
-                    : "text-cream-700 hover:bg-cream-100"
-                }`}
-                onClick={() => handleSelectNote(note)}
-              >
-                <StickyNote
-                  className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 text-cream-500"
-                  strokeWidth={1.75}
-                />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm truncate">
-                    {note.title || "Untitled"}
-                  </p>
-                  <p className="text-[10px] text-cream-500">
-                    {formatDate(note.updated_at)}
-                  </p>
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(note.id);
-                  }}
-                  disabled={deletingId === note.id}
-                  className="opacity-0 group-hover:opacity-100 text-cream-500 hover:text-rose transition-all p-0.5"
-                >
-                  {deletingId === note.id ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
-                  )}
-                </button>
-              </div>
-            ))}
-          </div>
+          <NoteList
+            notes={notes}
+            activeNote={activeNote}
+            deletingId={deletingId}
+            onSelect={handleSelectNote}
+            onDelete={handleDelete}
+          />
         )}
       </div>
 
@@ -166,9 +198,21 @@ export function NotesManager() {
               placeholder="Note title..."
               className="border-0 border-b border-cream-200 rounded-none px-5 py-4 text-lg font-heading text-ink-soft placeholder:text-cream-400 focus-visible:ring-0 bg-transparent"
             />
+            <div className="flex items-center gap-1 px-4 py-1.5 border-b border-cream-100">
+              <button
+                type="button"
+                onClick={insertBullet}
+                className="p-1 rounded-[6px] text-cream-500 hover:text-ink-soft hover:bg-cream-100 transition-colors"
+                title="Toggle bullet point (•)"
+              >
+                <List className="h-4 w-4" strokeWidth={1.75} />
+              </button>
+            </div>
             <Textarea
+              ref={textareaRef}
               value={content}
               onChange={(e) => handleContentChange(e.target.value)}
+              onKeyDown={handleKeyDown}
               placeholder="Write your thoughts..."
               className="flex-1 border-0 rounded-none px-5 py-4 resize-none text-sm text-cream-700 placeholder:text-cream-400 focus-visible:ring-0 bg-transparent min-h-[400px]"
             />
@@ -182,6 +226,95 @@ export function NotesManager() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+function NoteList({
+  notes,
+  activeNote,
+  deletingId,
+  onSelect,
+  onDelete,
+}: {
+  notes: Note[];
+  activeNote: Note | null;
+  deletingId: string | null;
+  onSelect: (note: Note) => void;
+  onDelete: (id: string) => void;
+}) {
+  const linked = notes.filter((n) => n.response_id);
+  const personal = notes.filter((n) => !n.response_id);
+
+  function renderItem(note: Note) {
+    return (
+      <div
+        key={note.id}
+        className={`group flex items-start gap-2 px-3 py-2.5 rounded-[10px] cursor-pointer transition-colors ${
+          activeNote?.id === note.id
+            ? "bg-peach-50 text-ink-soft"
+            : "text-cream-700 hover:bg-cream-100"
+        }`}
+        onClick={() => onSelect(note)}
+      >
+        {note.response_id ? (
+          <Link2
+            className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 text-peach-400"
+            strokeWidth={1.75}
+          />
+        ) : (
+          <StickyNote
+            className="h-3.5 w-3.5 mt-0.5 flex-shrink-0 text-cream-500"
+            strokeWidth={1.75}
+          />
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="text-sm truncate">{note.title || "Untitled"}</p>
+          <p className="text-[10px] text-cream-500">
+            {formatDate(note.updated_at)}
+          </p>
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(note.id);
+          }}
+          disabled={deletingId === note.id}
+          className="opacity-0 group-hover:opacity-100 text-cream-500 hover:text-rose transition-all p-0.5"
+        >
+          {deletingId === note.id ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
+          )}
+        </button>
+      </div>
+    );
+  }
+
+  // If no linked notes, just show flat list
+  if (linked.length === 0) {
+    return <div className="space-y-1">{personal.map(renderItem)}</div>;
+  }
+
+  return (
+    <div className="space-y-3">
+      {linked.length > 0 && (
+        <div>
+          <p className="text-[10px] font-medium text-cream-500 uppercase tracking-[0.04em] px-3 mb-1">
+            Linked to questions
+          </p>
+          <div className="space-y-1">{linked.map(renderItem)}</div>
+        </div>
+      )}
+      {personal.length > 0 && (
+        <div>
+          <p className="text-[10px] font-medium text-cream-500 uppercase tracking-[0.04em] px-3 mb-1">
+            Personal notes
+          </p>
+          <div className="space-y-1">{personal.map(renderItem)}</div>
+        </div>
+      )}
     </div>
   );
 }

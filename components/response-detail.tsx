@@ -5,6 +5,7 @@ import { CategoryBadge } from "@/components/category-badge";
 import { AnalysisDisplay } from "@/components/analysis-display";
 import { formatFullDate } from "@/lib/utils";
 import { ArrowLeft, Type, Video } from "lucide-react";
+import { ResponseNote } from "@/components/response-note";
 import type { UserResponse } from "@/types";
 
 interface ResponseDetailProps {
@@ -79,6 +80,9 @@ export function ResponseDetail({ response }: ResponseDetailProps) {
 
       {/* Analysis */}
       {analysis && <AnalysisDisplay analysis={analysis} />}
+
+      {/* Notes */}
+      <ResponseNote responseId={response.id} />
     </div>
   );
 }

@@ -9,11 +9,11 @@ import { AnalysisDisplay } from "@/components/analysis-display";
 import { HeatMap } from "@/components/heat-map";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { Type, Video } from "lucide-react";
+import { Type, Video, RefreshCw } from "lucide-react";
 import type { Analysis } from "@/types";
 
 export default function DashboardPage() {
-  const { dailyQuestion, loading, refetch } = useDailyQuestion();
+  const { dailyQuestion, loading, refreshing, refetch, refresh } = useDailyQuestion();
   const [mode, setMode] = useState<"text" | "video">("text");
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -53,6 +53,20 @@ export default function DashboardPage() {
           servedDate={dailyQuestion.served_date}
           responded={dailyQuestion.responded}
         />
+      )}
+
+      {!alreadyAnswered && !submitted && dailyQuestion && (
+        <button
+          onClick={refresh}
+          disabled={refreshing}
+          className="flex items-center gap-1.5 text-sm text-cream-500 hover:text-peach-600 transition-colors disabled:opacity-50"
+        >
+          <RefreshCw
+            className={cn("h-3.5 w-3.5", refreshing && "animate-spin")}
+            strokeWidth={1.75}
+          />
+          {refreshing ? "Loading new question..." : "Skip question"}
+        </button>
       )}
 
       {!alreadyAnswered && !submitted && dailyQuestion && (

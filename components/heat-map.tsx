@@ -23,7 +23,13 @@ function getDateString(date: Date): string {
   return date.toISOString().split("T")[0];
 }
 
-function getWeeks(): { date: Date; dateStr: string }[][] {
+interface DayCell {
+  date: Date;
+  dateStr: string;
+  isFuture: boolean;
+}
+
+function getWeeks(): DayCell[][] {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -33,16 +39,21 @@ function getWeeks(): { date: Date; dateStr: string }[][] {
   // Align to Sunday
   start.setDate(start.getDate() - start.getDay());
 
-  const weeks: { date: Date; dateStr: string }[][] = [];
+  // Extend to end of current week (Saturday)
+  const endOfWeek = new Date(today);
+  endOfWeek.setDate(endOfWeek.getDate() + (6 - endOfWeek.getDay()));
+
+  const weeks: DayCell[][] = [];
   const current = new Date(start);
 
-  while (current <= today) {
-    const week: { date: Date; dateStr: string }[] = [];
+  while (current <= endOfWeek) {
+    const week: DayCell[] = [];
     for (let d = 0; d < 7; d++) {
-      if (current <= today) {
+      if (current <= endOfWeek) {
         week.push({
           date: new Date(current),
           dateStr: getDateString(current),
+          isFuture: current > today,
         });
       }
       current.setDate(current.getDate() + 1);
@@ -53,7 +64,8 @@ function getWeeks(): { date: Date; dateStr: string }[][] {
   return weeks;
 }
 
-function getCellColor(count: number): string {
+function getCellColor(count: number, isFuture: boolean): string {
+  if (isFuture) return "bg-cream-50";
   if (count === 0) return "bg-cream-100";
   if (count === 1) return "bg-peach-200";
   if (count === 2) return "bg-peach-300";
@@ -104,10 +116,13 @@ export function HeatMap() {
             {monthLabels.map(({ label, col }, i) => {
               const nextCol = monthLabels[i + 1]?.col ?? weeks.length;
               const span = nextCol - col;
+              // Skip narrow months to prevent overlap, but always show the last month
+              const isLast = i === monthLabels.length - 1;
+              if (span < 3 && !isLast) return null;
               return (
                 <div
                   key={`${label}-${col}`}
-                  className="text-[10px] text-cream-500"
+                  className="text-[10px] text-cream-500 truncate"
                   style={{ width: `${span * 13}px` }}
                 >
                   {label}
@@ -134,16 +149,20 @@ export function HeatMap() {
             <div className="flex gap-0.5">
               {weeks.map((week, wi) => (
                 <div key={wi} className="flex flex-col gap-0.5">
-                  {week.map(({ dateStr }) => {
+                  {week.map(({ dateStr, isFuture }) => {
                     const count = activity[dateStr] || 0;
                     return (
                       <div
                         key={dateStr}
                         className={cn(
                           "w-[11px] h-[11px] rounded-[2px] transition-colors",
-                          getCellColor(count)
+                          getCellColor(count, isFuture)
                         )}
-                        title={`${dateStr}: ${count} ${count === 1 ? "response" : "responses"}`}
+                        title={
+                          isFuture
+                            ? dateStr
+                            : `${dateStr}: ${count} ${count === 1 ? "response" : "responses"}`
+                        }
                       />
                     );
                   })}

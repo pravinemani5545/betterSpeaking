@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
 import { selectDailyQuestion } from "@/lib/daily-question";
 
-export async function GET() {
+export async function POST() {
   const supabase = await createServerClient();
   const {
     data: { user },
@@ -13,29 +13,42 @@ export async function GET() {
 
   const today = new Date().toISOString().split("T")[0];
 
-  // Check if already served today
-  const { data: existing } = await supabase
+  // Get current daily question
+  const { data: current } = await supabase
     .from("daily_questions")
-    .select("*, question:questions(*)")
+    .select("id, question_id, responded")
     .eq("user_id", user.id)
     .eq("served_date", today)
     .single();
 
-  if (existing) {
-    return NextResponse.json(existing);
-  }
-
-  // Select using weighted rotation
-  const selectedQuestionId = await selectDailyQuestion(supabase, user.id);
-
-  if (!selectedQuestionId) {
+  if (!current) {
     return NextResponse.json(
-      { error: "No questions available. Add some questions first." },
+      { error: "No daily question to refresh" },
       { status: 404 }
     );
   }
 
-  // Insert daily question
+  if (current.responded) {
+    return NextResponse.json(
+      { error: "Cannot skip a question you've already answered" },
+      { status: 400 }
+    );
+  }
+
+  // Delete current and pick a new one excluding the current question
+  await supabase.from("daily_questions").delete().eq("id", current.id);
+
+  const selectedQuestionId = await selectDailyQuestion(supabase, user.id, [
+    current.question_id,
+  ]);
+
+  if (!selectedQuestionId) {
+    return NextResponse.json(
+      { error: "No other questions available" },
+      { status: 404 }
+    );
+  }
+
   const { data: dailyQuestion, error } = await supabase
     .from("daily_questions")
     .insert({
